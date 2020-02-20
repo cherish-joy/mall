@@ -1,8 +1,7 @@
 <template>
-  <div class="goods-list-item">
-    <a :href="list.link">
-      <img :src="list.show.img" alt="" />
-    </a>
+  <div class="goods-list-item" @click="itemClick">
+    <img :src="getImg" alt @load="imgLoad" />
+
     <div class="info">
       <p class="title">{{ list.title }}</p>
       <span class="price">{{ list.price }}</span>
@@ -14,7 +13,20 @@
 <script>
 export default {
   name: "GoodsListItem",
-  props: ["list"]
+  props: ["list"],
+  methods: {
+    imgLoad() {
+      this.$bus.$emit("imgLoad");
+    },
+    itemClick() {
+      this.$router.push("/detail/" + this.list.iid);
+    }
+  },
+  computed: {
+    getImg() {
+      return this.list.image || this.list.show.img;
+    }
+  }
 };
 </script>
 

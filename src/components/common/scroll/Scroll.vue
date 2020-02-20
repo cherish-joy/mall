@@ -1,6 +1,8 @@
 <template>
   <div ref="wrapper">
-    <div><slot></slot></div>
+    <div>
+      <slot></slot>
+    </div>
   </div>
 </template>
 
@@ -27,6 +29,9 @@ export default {
     backTop(x, y, time = 300) {
       //回到某个坐标值 第三个参数是动画时间
       this.bscroll.scrollTo(x, y, time);
+    },
+    imgRefresh() {
+      this.bscroll.refresh();
     }
   },
   mounted() {

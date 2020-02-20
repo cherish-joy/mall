@@ -3,6 +3,13 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
+    <tab-control
+      :title="['流行', '新款', '精选']"
+      @typeClick="typeClick"
+      class="tab-control-two"
+      v-show="tabControlShow"
+      ref="tabControlTwo"
+    />
     <scroll
       class="home-scroll"
       ref="scroll"
@@ -11,13 +18,14 @@
       @loadMore="loadMore"
       @showTopIcon="showTopIcon"
     >
-      <swiper :banners="banners" />
+      <swiper :banners="banners" @swiperLoad="swiperLoad" />
       <recommend :recommends="recommends" />
       <feature-item />
       <tab-control
-        class="tab-control"
+        class="tab-control-one"
         :title="['流行', '新款', '精选']"
         @typeClick="typeClick"
+        ref="tabControlOne"
       />
       <goods-list :list="goodsList[type].lists" />
     </scroll>
@@ -38,6 +46,8 @@ import FeatureItem from "./components/FeatureItem";
 
 import { getHomeData, getGoodsList } from "services/home";
 
+import { debounce } from "common/utils";
+import { imgMixin } from "common/mixin";
 export default {
   name: "Home",
   components: {
@@ -69,7 +79,11 @@ export default {
         }
       },
       type: "pop",
-      isShow: false
+      isShow: false,
+      tabControlOffset: 0,
+      tabControlShow: false,
+      scrollY: 0,
+      imgListener: null
     };
   },
   created() {
@@ -77,8 +91,32 @@ export default {
     this.fetchGoodsList("pop");
     this.fetchGoodsList("new");
     this.fetchGoodsList("sell");
+    //每张图片加载完成 都会触发这个这个事件,第二个参数就是一个回调函数
+  },
+
+  mixins: [imgMixin],
+  activated() {
+    /**
+     * 这个功能其实加了keep-alive就可以了 但是好像有时候会出现一点问题
+     */
+    //进入页面时 自动滚到离开时的坐标
+
+    this.$refs.scroll.backTop(0, this.scrollY, 0);
+
+    //最好 刷新一下
+    this.$refs.scroll.imgRefresh();
+  },
+  deactivated() {
+    //离开页面时记录y的坐标
+
+    this.scrollY = this.$refs.scroll.bscroll.y;
+    this.$bus.$off("imgLoad", this.imgListener);
   },
   methods: {
+    swiperLoad() {
+      this.tabControlOffset = this.$refs.tabControlOne.$el.offsetTop;
+    },
+
     typeClick(index) {
       switch (index) {
         case 0:
@@ -91,6 +129,8 @@ export default {
           this.type = "sell";
           break;
       }
+      this.$refs.tabControlTwo.currentIndex = index;
+      this.$refs.tabControlOne.currentIndex = index;
     },
     topClick() {
       this.$refs.scroll.backTop(0, 0, 500);
@@ -98,6 +138,8 @@ export default {
     showTopIcon(position) {
       //y坐标大于1000时显示icon
       this.isShow = -position.y > 1000;
+      //显示或者隐藏tabbar
+      this.tabControlShow = -position.y >= this.tabControlOffset;
     },
     loadMore() {
       this.fetchGoodsList(this.type);
@@ -123,16 +165,16 @@ export default {
 .home-nav {
   background-color: rgb(185, 18, 21);
   color: #fff;
-  position: fixed;
+  /* position: fixed;
   top: 0;
+  z-index: 9; */
+}
+.tab-control-two {
+  position: relative;
   z-index: 9;
 }
-.tab-control {
-  position: sticky;
-  top: 44px;
-}
 .home {
-  padding-top: 44px;
+  /* padding-top: 44px; */
   /* 整个视口的高度 */
   height: 100vh;
   position: relative;
@@ -144,5 +186,6 @@ export default {
   bottom: 49px;
   left: 0;
   right: 0;
+  overflow: hidden;
 }
 </style>
