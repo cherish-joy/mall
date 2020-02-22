@@ -36,7 +36,6 @@
 import NavBar from "components/common/navbar/NavBar";
 import Scroll from "components/common/scroll/Scroll";
 
-import BackTop from "components/content/backtop/BackTop";
 import GoodsList from "components/content/goodslist/GoodsList";
 import TabControl from "components/content/tabcontrol/TabControl";
 
@@ -47,7 +46,7 @@ import FeatureItem from "./components/FeatureItem";
 import { getHomeData, getGoodsList } from "services/home";
 
 import { debounce } from "common/utils";
-import { imgMixin } from "common/mixin";
+import { imgMixin, backTopMixin } from "common/mixin";
 export default {
   name: "Home",
   components: {
@@ -57,8 +56,7 @@ export default {
     FeatureItem,
     GoodsList,
     TabControl,
-    Scroll,
-    BackTop
+    Scroll
   },
   data() {
     return {
@@ -82,8 +80,7 @@ export default {
       isShow: false,
       tabControlOffset: 0,
       tabControlShow: false,
-      scrollY: 0,
-      imgListener: null
+      scrollY: 0
     };
   },
   created() {
@@ -94,7 +91,7 @@ export default {
     //每张图片加载完成 都会触发这个这个事件,第二个参数就是一个回调函数
   },
 
-  mixins: [imgMixin],
+  mixins: [imgMixin, backTopMixin],
   activated() {
     /**
      * 这个功能其实加了keep-alive就可以了 但是好像有时候会出现一点问题
@@ -132,9 +129,9 @@ export default {
       this.$refs.tabControlTwo.currentIndex = index;
       this.$refs.tabControlOne.currentIndex = index;
     },
-    topClick() {
-      this.$refs.scroll.backTop(0, 0, 500);
-    },
+    // topClick() {
+    //   this.$refs.scroll.backTop(0, 0, 500);
+    // },
     showTopIcon(position) {
       //y坐标大于1000时显示icon
       this.isShow = -position.y > 1000;
